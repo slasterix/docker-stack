@@ -1,0 +1,51 @@
+version: '3.6'
+services:
+  php72:
+    deploy:
+      restart_policy:
+        condition: on-failure
+    ports:
+      - 80:80
+      - 443:443
+    image: slasterix/docker-ubuntu-apache-php7.2
+    depends_on:
+      - mariadb
+    volumes:
+      - ./php72/php.ini:/etc/php/7.2/apache2/php.ini
+      - ./php72/apache-sites:/etc/apache2/sites-enabled
+      - /media/hd-dati/www:/var/www/html
+      - /media/hd-dati/log/apache2/php72:/var/log/apache2
+  php56:
+    deploy:
+      restart_policy:
+        condition: on-failure
+    ports:
+      - 8080:80
+    image: slasterix/docker-ubuntu-apache-php5.6
+    depends_on:
+      - mariadb
+    volumes:
+      - ./php56/php.ini:/etc/php/5.6/apache2/php.ini
+      - ./php56/apache-sites:/etc/apache2/sites-enabled
+      - /media/hd-dati/www:/var/www/html
+      - /media/hd-dati/log/apache2/php56:/var/log/apache2
+  mariadb:
+    deploy:
+      restart_policy:
+        condition: on-failure
+    secrets:
+      - mysql-pwd
+    environment:
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/mysql-pwd
+    image: mariadb
+    ports:
+      - 3306:3306
+    volumes:
+      - mariadb-data:/var/lib/mysql
+      - ./database-config.cnf:/etc/mysql/conf.d/config.cnf
+volumes:
+  mariadb-data:
+
+secrets:
+  mysql-pwd:
+    file: ./mysql-pwd.txt
